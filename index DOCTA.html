@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Docta-Flash</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAF7F2;
+    --ink: #16231F;
+    --ink-soft: #4B5A54;
+    --teal: #1F5C4F;
+    --teal-deep: #143F36;
+    --sage: #E4EDE9;
+    --amber: #E8A33D;
+    --amber-deep: #C97F1F;
+    --red: #B3452F;
+    --line: rgba(22, 35, 31, 0.10);
+    --white: #FFFFFF;
+    --radius-lg: 22px;
+    --radius-md: 16px;
+    --radius-sm: 12px;
+    --font-display: "Fraunces", serif;
+    --font-body: "Work Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12211C;
+      --ink: #F1F5F3;
+      --ink-soft: #A9BAB3;
+      --sage: #1B332B;
+      --line: rgba(241, 245, 243, 0.12);
+      --white: #17281F;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12211C;
+    --ink: #F1F5F3;
+    --ink-soft: #A9BAB3;
+    --sage: #1B332B;
+    --line: rgba(241, 245, 243, 0.12);
+    --white: #17281F;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  html, body { height: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  button { font-family: inherit; }
+
+  .app {
+    max-width: 430px;
+    margin: 0 auto;
+    min-height: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+
+  @media (min-width: 431px) {
+    body { background: var(--sage); }
+    .app {
+      margin: 24px auto;
+      min-height: calc(100% - 48px);
+      border-radius: 32px;
+      box-shadow: 0 30px 60px -20px rgba(20, 35, 30, 0.25);
+      background: var(--bg);
+    }
+  }
+
+  /* ---------- Views / navigation ---------- */
+
+  .view {
+    display: none;
+    flex-direction: column;
+    min-height: 100%;
+    animation: viewIn 0.22s ease;
+  }
+  .view.active { display: flex; }
+
+  @keyframes viewIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .view-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 20px 8px;
+  }
+
+  .back-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .back-btn svg {
+    width: 16px; height: 16px;
+    stroke: var(--ink); fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  .view-title {
+    font-family: var(--font-display);
+    font-size: 19px;
+    font-weight: 500;
+  }
+
+  .view-body {
+    padding: 8px 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex: 1;
+  }
+
+  /* ---------- Home (screen 1) ---------- */
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 24px 6px;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-mark {
+    width: 34px; height: 34px; border-radius: 10px;
+    background: var(--teal); position: relative; flex-shrink: 0;
+  }
+  .brand-mark::before, .brand-mark::after {
+    content: ""; position: absolute; background: var(--amber); border-radius: 2px;
+  }
+  .brand-mark::before { top: 15px; left: 8px; right: 8px; height: 4px; }
+  .brand-mark::after { left: 15px; top: 8px; bottom: 8px; width: 4px; }
+  .brand-name { font-family: var(--font-display); font-size: 19px; font-weight: 600; letter-spacing: 0.2px; }
+
+  .status-pill {
+    display: flex; align-items: center; gap: 6px;
+    padding: 7px 12px; border-radius: 999px; background: var(--sage);
+    font-size: 12.5px; color: var(--teal-deep); font-weight: 600;
+  }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--teal); }
+
+  .hero { padding: 22px 24px 28px; }
+  .hero-eyebrow { font-size: 14px; color: var(--ink-soft); margin: 0 0 6px; }
+  .hero-title {
+    font-family: var(--font-display); font-size: 30px; line-height: 1.18;
+    font-weight: 500; margin: 0 0 14px; max-width: 15ch;
+  }
+  .hero-sub { font-size: 15px; line-height: 1.55; color: var(--ink-soft); margin: 0; max-width: 34ch; }
+
+  .hero-art {
+    margin-top: 22px; height: 96px; border-radius: var(--radius-lg);
+    background:
+      radial-gradient(120px 90px at 15% 30%, rgba(232,163,61,0.35), transparent 60%),
+      radial-gradient(160px 120px at 85% 70%, rgba(31,92,79,0.25), transparent 65%),
+      var(--sage);
+    position: relative; overflow: hidden;
+  }
+  .hero-art svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+  .section-label { padding: 0 24px; font-size: 13px; color: var(--ink-soft); margin: 4px 0 12px; }
+
+  .parcours { padding: 0 24px; display: flex; flex-direction: column; gap: 14px; }
+
+  .parcours-card {
+    display: flex; align-items: center; gap: 16px; padding: 20px;
+    border-radius: var(--radius-lg); border: 1px solid var(--line);
+    background: var(--white); min-height: 88px; width: 100%;
+    text-align: left; cursor: pointer;
+  }
+  .parcours-card.is-primary { background: var(--teal); border-color: var(--teal); color: #fff; }
+  .parcours-card.is-primary .parcours-title { color: #fff; }
+  .parcours-card.is-primary .parcours-desc { color: rgba(255,255,255,0.78); }
+  .parcours-card.is-primary .icon-tile { background: rgba(255,255,255,0.16); }
+  .parcours-card.is-primary .icon-tile svg { stroke: #fff; }
+  .parcours-card.is-primary .chevron { border-color: rgba(255,255,255,0.5); }
+  .parcours-card.is-primary .chevron svg { stroke: #fff; }
+
+  .icon-tile {
+    width: 52px; height: 52px; border-radius: var(--radius-md); background: var(--sage);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .icon-tile svg { width: 26px; height: 26px; stroke: var(--teal-deep); fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+
+  .parcours-text { flex: 1; min-width: 0; }
+  .parcours-title { font-family: var(--font-display); font-size: 17px; font-weight: 500; margin: 0 0 3px; color: var(--ink); }
+  .parcours-desc { font-size: 13.5px; color: var(--ink-soft); margin: 0; line-height: 1.4; }
+
+  .chevron {
+    width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .chevron svg { width: 14px; height: 14px; stroke: var(--ink-soft); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  .info-strip {
+    margin: 26px 24px 10px; padding: 16px 18px; border-radius: var(--radius-md);
+    background: var(--sage); display: flex; gap: 12px; align-items: flex-start;
+  }
+  .info-strip svg { width: 20px; height: 20px; stroke: var(--teal-deep); fill: none; stroke-width: 1.7; flex-shrink: 0; margin-top: 2px; }
+  .info-strip p { margin: 0; font-size: 13px; line-height: 1.5; color: var(--teal-deep); }
+
+  .spacer { flex: 1; min-height: 24px; }
+
+  .bottom-nav {
+    position: sticky; bottom: 0; left: 0; right: 0; background: var(--bg);
+    border-top: 1px solid var(--line); padding: 10px 20px calc(12px + env(safe-area-inset-bottom, 0px));
+    display: flex; justify-content: space-around;
+  }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 64px; padding: 6px 4px; color: var(--ink-soft); background: none; border: none; }
+  .nav-item svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .nav-item span { font-size: 11px; font-weight: 500; }
+  .nav-item.is-active { color: var(--teal); }
+
+  /* ---------- Search (parcours 1) ---------- */
+
+  .search-box {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--white); border: 1px solid var(--line);
+    border-radius: var(--radius-md); padding: 12px 14px;
+  }
+  .search-box svg { width: 18px; height: 18px; stroke: var(--ink-soft); fill: none; stroke-width: 1.8; flex-shrink: 0; }
+  .search-box input {
+    border: none; outline: none; background: none; font-size: 15px;
+    font-family: var(--font-body); color: var(--ink); width: 100%;
+  }
+  .search-box input::placeholder { color: var(--ink-soft); }
+
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    border: 1px solid var(--line); background: var(--white); color: var(--ink-soft);
+    padding: 8px 14px; border-radius: 999px; font-size: 13px; cursor: pointer;
+  }
+  .chip:active { background: var(--sage); }
+
+  .primary-btn {
+    border: none; background: var(--teal); color: #fff; font-weight: 600;
+    font-size: 15px; padding: 15px; border-radius: var(--radius-md); cursor: pointer;
+  }
+  .primary-btn:active { background: var(--teal-deep); }
+
+  .field-label { font-size: 13px; color: var(--ink-soft); margin: 2px 0 -6px; }
+
+  .location-note {
+    display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink-soft);
+  }
+  .location-note svg { width: 15px; height: 15px; stroke: var(--teal); fill: none; stroke-width: 1.8; }
+
+  /* ---------- Results ---------- */
+
+  .results-summary { font-size: 13.5px; color: var(--ink-soft); }
+  .results-summary strong { color: var(--ink); font-weight: 600; }
+
+  .pharmacy-card {
+    border: 1px solid var(--line); background: var(--white);
+    border-radius: var(--radius-md); padding: 16px; display: flex; flex-direction: column; gap: 8px;
+  }
+  .pharmacy-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .pharmacy-name { font-family: var(--font-display); font-size: 16px; font-weight: 500; margin: 0; }
+  .pharmacy-address { font-size: 13px; color: var(--ink-soft); margin: 2px 0 0; }
+  .pharmacy-meta { display: flex; gap: 10px; font-size: 12.5px; color: var(--ink-soft); align-items: center; }
+
+  .badge {
+    font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .badge.ok { background: rgba(31,92,79,0.12); color: var(--teal-deep); }
+  .badge.no { background: rgba(179,69,47,0.10); color: var(--red); }
+
+  .empty-state { text-align: center; padding: 30px 10px; }
+  .empty-state svg { width: 40px; height: 40px; stroke: var(--ink-soft); fill: none; stroke-width: 1.5; margin-bottom: 10px; }
+  .empty-state p { color: var(--ink-soft); font-size: 13.5px; margin: 0; }
+
+  /* ---------- Conseil (parcours 2) ---------- */
+
+  .textarea-box {
+    border: 1px solid var(--line); background: var(--white); border-radius: var(--radius-md); padding: 4px;
+  }
+  .textarea-box textarea {
+    width: 100%; border: none; outline: none; resize: none; background: none;
+    font-family: var(--font-body); font-size: 15px; color: var(--ink); padding: 12px; min-height: 84px;
+  }
+  .textarea-box textarea::placeholder { color: var(--ink-soft); }
+
+  .chat-thread { display: flex; flex-direction: column; gap: 12px; }
+  .bubble { max-width: 86%; padding: 12px 14px; border-radius: 16px; font-size: 14px; line-height: 1.5; }
+  .bubble.user { align-self: flex-end; background: var(--teal); color: #fff; border-bottom-right-radius: 4px; }
+  .bubble.pharma { align-self: flex-start; background: var(--sage); color: var(--ink); border-bottom-left-radius: 4px; }
+  .bubble.pharma .who { display: block; font-size: 11.5px; font-weight: 600; color: var(--teal-deep); margin-bottom: 3px; }
+
+  .typing-dots { display: inline-flex; gap: 4px; align-self: flex-start; background: var(--sage); padding: 12px 14px; border-radius: 16px; border-bottom-left-radius: 4px; }
+  .typing-dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-soft); animation: blink 1.2s infinite ease-in-out; }
+  .typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes blink { 0%, 80%, 100% { opacity: 0.25; } 40% { opacity: 1; } }
+
+  .safety-note {
+    font-size: 12px; color: var(--ink-soft); line-height: 1.5; border-top: 1px solid var(--line); padding-top: 12px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .view, .typing-dots span { animation: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ===================== HOME ===================== -->
+  <section class="view active" id="view-home">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-mark"></div>
+        <div class="brand-name">Docta-Flash</div>
+      </div>
+      <div class="status-pill"><span class="status-dot"></span>Douala</div>
+    </div>
+
+    <div class="hero">
+      <p class="hero-eyebrow">Bonjour</p>
+      <h1 class="hero-title">De quoi avez-vous besoin aujourd'hui ?</h1>
+      <p class="hero-sub">Trouvez un médicament en pharmacie ou obtenez un premier conseil pharmaceutique, près de chez vous.</p>
+      <div class="hero-art">
+        <svg viewBox="0 0 400 96" preserveAspectRatio="none">
+          <circle cx="60" cy="48" r="30" fill="none" stroke="var(--teal)" stroke-width="1.4" opacity="0.35"/>
+          <circle cx="340" cy="30" r="16" fill="none" stroke="var(--amber-deep)" stroke-width="1.4" opacity="0.4"/>
+          <path d="M120 70 C 160 30, 220 30, 260 60 S 340 80, 380 50" fill="none" stroke="var(--teal)" stroke-width="1.6" opacity="0.3"/>
+        </svg>
+      </div>
+    </div>
+
+    <p class="section-label">Choisissez votre parcours</p>
+
+    <div class="parcours">
+      <button class="parcours-card is-primary" onclick="showView('view-med-search')">
+        <div class="icon-tile">
+          <svg viewBox="0 0 24 24"><path d="M9 3h6v4a3 3 0 0 1-6 0V3z"/><path d="M8 9l-3 3v9h14v-9l-3-3"/><path d="M9 9v3M15 9v3M6 15h12"/></svg>
+        </div>
+        <div class="parcours-text">
+          <p class="parcours-title">Trouver un médicament</p>
+          <p class="parcours-desc">Vérifiez la disponibilité auprès des pharmacies partenaires</p>
+        </div>
+        <div class="chevron"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></div>
+      </button>
+
+      <button class="parcours-card" onclick="showView('view-advice-home')">
+        <div class="icon-tile">
+          <svg viewBox="0 0 24 24"><path d="M12 4a4 4 0 0 1 4 4c0 2-1.5 3-2.5 4S12 14 12 15"/><path d="M12 19v.01"/></svg>
+        </div>
+        <div class="parcours-text">
+          <p class="parcours-title">Conseil du pharmacien</p>
+          <p class="parcours-desc">Posez une question pharmaceutique simple</p>
+        </div>
+        <div class="chevron"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></div>
+      </button>
+    </div>
+
+    <div class="info-strip">
+      <svg viewBox="0 0 24 24"><path d="M12 9v4M12 16.5v.01"/><circle cx="12" cy="12" r="9"/></svg>
+      <p>Résultats et échanges simulés à des fins de démonstration — aucune donnée réelle n'est transmise.</p>
+    </div>
+
+    <div class="spacer"></div>
+
+    <div class="bottom-nav">
+      <button class="nav-item is-active"><svg viewBox="0 0 24 24"><path d="M4 11l8-6 8 6v9a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg><span>Accueil</span></button>
+      <button class="nav-item" onclick="showView('view-med-search')"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg><span>Parcours</span></button>
+      <button class="nav-item"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.9 3.1-6 7-6s7 2.1 7 6"/></svg><span>Profil</span></button>
+    </div>
+  </section>
+
+  <!-- ===================== PARCOURS 1 : RECHERCHE ===================== -->
+  <section class="view" id="view-med-search">
+    <div class="view-header">
+      <button class="back-btn" onclick="showView('view-home')"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <div class="view-title">Trouver un médicament</div>
+    </div>
+    <div class="view-body">
+      <p class="field-label">Nom du médicament</p>
+      <div class="search-box">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input id="med-input" type="text" placeholder="Ex : Paracétamol, Coartem…" onkeydown="if(event.key==='Enter'){runSearch();}">
+      </div>
+
+      <p class="field-label">Recherches fréquentes</p>
+      <div class="chip-row">
+        <button class="chip" onclick="quickSearch('Paracétamol')">Paracétamol</button>
+        <button class="chip" onclick="quickSearch('Amoxicilline')">Amoxicilline</button>
+        <button class="chip" onclick="quickSearch('Coartem')">Coartem</button>
+        <button class="chip" onclick="quickSearch('Métformine')">Métformine</button>
+        <button class="chip" onclick="quickSearch('Fer + Acide folique')">Fer + Acide folique</button>
+      </div>
+
+      <div class="location-note">
+        <svg viewBox="0 0 24 24"><path d="M12 21s7-6.5 7-11a7 7 0 1 0-14 0c0 4.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+        Position simulée : environs d'Akwa, Douala
+      </div>
+
+      <button class="primary-btn" onclick="runSearch()">Rechercher</button>
+    </div>
+  </section>
+
+  <!-- ===================== PARCOURS 1 : RÉSULTATS ===================== -->
+  <section class="view" id="view-med-results">
+    <div class="view-header">
+      <button class="back-btn" onclick="showView('view-med-search')"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <div class="view-title">Résultats</div>
+    </div>
+    <div class="view-body">
+      <p class="results-summary" id="results-summary"></p>
+      <div id="results-list" style="display:flex; flex-direction:column; gap:12px;"></div>
+    </div>
+  </section>
+
+  <!-- ===================== PARCOURS 2 : ACCUEIL CONSEIL ===================== -->
+  <section class="view" id="view-advice-home">
+    <div class="view-header">
+      <button class="back-btn" onclick="showView('view-home')"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <div class="view-title">Conseil du pharmacien</div>
+    </div>
+    <div class="view-body">
+      <p class="field-label">Questions courantes</p>
+      <div class="chip-row">
+        <button class="chip" onclick="askAdvice('Comment conserver mes médicaments ?')">Comment conserver mes médicaments ?</button>
+        <button class="chip" onclick="askAdvice('Que faire en cas d\'oubli de prise ?')">Oubli d'une prise</button>
+        <button class="chip" onclick="askAdvice('Puis-je jeter un médicament périmé avec les ordures ?')">Médicament périmé</button>
+        <button class="chip" onclick="askAdvice('Puis-je prendre deux médicaments en même temps ?')">Associer deux médicaments</button>
+      </div>
+
+      <p class="field-label">Ou posez votre propre question</p>
+      <div class="textarea-box">
+        <textarea id="advice-input" placeholder="Décrivez votre question en quelques mots…"></textarea>
+      </div>
+      <button class="primary-btn" onclick="askAdviceFromInput()">Envoyer</button>
+    </div>
+  </section>
+
+  <!-- ===================== PARCOURS 2 : ÉCHANGE ===================== -->
+  <section class="view" id="view-advice-chat">
+    <div class="view-header">
+      <button class="back-btn" onclick="showView('view-advice-home')"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <div class="view-title">Conseil du pharmacien</div>
+    </div>
+    <div class="view-body">
+      <div class="chat-thread" id="chat-thread"></div>
+      <p class="safety-note">Ceci est un conseil général et automatisé, pas un diagnostic. En cas de doute ou de symptômes inhabituels, consultez un pharmacien ou un médecin.</p>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  // ---------- Navigation ----------
+  function showView(id) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.getElementById(id).scrollTop = 0;
+  }
+
+  // ---------- Données simulées : médicaments / pharmacies ----------
+  const MED_DB = [
+    { name: "Paracétamol", aliases: ["doliprane"], pharmacies: [
+      { name: "Pharmacie Akwa Centre", address: "Avenue de Gaulle, Akwa", distance: "0.4 km", available: true },
+      { name: "Pharmacie du Rond-Point Deido", address: "Rond-point Deido", distance: "1.1 km", available: true },
+      { name: "Pharmacie Bonapriso", address: "Rue Njo-Njo, Bonapriso", distance: "2.3 km", available: false }
+    ]},
+    { name: "Amoxicilline", aliases: ["amox"], pharmacies: [
+      { name: "Pharmacie Bonanjo", address: "Boulevard de la Liberté, Bonanjo", distance: "0.9 km", available: true },
+      { name: "Pharmacie Akwa Centre", address: "Avenue de Gaulle, Akwa", distance: "0.4 km", available: false }
+    ]},
+    { name: "Coartem", aliases: ["artéméther", "paludisme"], pharmacies: [
+      { name: "Pharmacie New Bell", address: "Marché New Bell", distance: "1.6 km", available: true },
+      { name: "Pharmacie du Rond-Point Deido", address: "Rond-point Deido", distance: "1.1 km", available: true },
+      { name: "Pharmacie Bonapriso", address: "Rue Njo-Njo, Bonapriso", distance: "2.3 km", available: true }
+    ]},
+    { name: "Métformine", aliases: ["metformine", "diabète"], pharmacies: [
+      { name: "Pharmacie Bonanjo", address: "Boulevard de la Liberté, Bonanjo", distance: "0.9 km", available: true },
+      { name: "Pharmacie New Bell", address: "Marché New Bell", distance: "1.6 km", available: false }
+    ]},
+    { name: "Fer + Acide folique", aliases: ["fer", "grossesse"], pharmacies: [
+      { name: "Pharmacie Akwa Centre", address: "Avenue de Gaulle, Akwa", distance: "0.4 km", available: true },
+      { name: "Pharmacie Bonapriso", address: "Rue Njo-Njo, Bonapriso", distance: "2.3 km", available: true }
+    ]}
+  ];
+
+  function quickSearch(name) {
+    document.getElementById('med-input').value = name;
+    runSearch();
+  }
+
+  function runSearch() {
+    const query = document.getElementById('med-input').value.trim();
+    const list = document.getElementById('results-list');
+    const summary = document.getElementById('results-summary');
+    list.innerHTML = '';
+
+    if (!query) { showView('view-med-search'); return; }
+
+    const q = query.toLowerCase();
+    const match = MED_DB.find(m =>
+      m.name.toLowerCase().includes(q) || m.aliases.some(a => a.includes(q) || q.includes(a))
+    );
+
+    if (!match) {
+      summary.innerHTML = 'Aucune correspondance exacte pour «\u00a0' + escapeHtml(query) + '\u00a0».';
+      list.innerHTML =
+        '<div class="empty-state">' +
+        '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>' +
+        '<p>Essayez un autre nom, ou vérifiez l\'orthographe. Les pharmaciens partenaires pourront confirmer la disponibilité une fois cette fonctionnalité connectée.</p>' +
+        '</div>';
+      showView('view-med-results');
+      return;
+    }
+
+    const availableCount = match.pharmacies.filter(p => p.available).length;
+    summary.innerHTML = 'Résultats pour «\u00a0<strong>' + escapeHtml(match.name) + '</strong>\u00a0» — ' + availableCount + ' pharmacie(s) avec stock signalé';
+
+    match.pharmacies.forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'pharmacy-card';
+      card.innerHTML =
+        '<div class="pharmacy-top">' +
+          '<div>' +
+            '<p class="pharmacy-name">' + escapeHtml(p.name) + '</p>' +
+            '<p class="pharmacy-address">' + escapeHtml(p.address) + '</p>' +
+          '</div>' +
+          '<span class="badge ' + (p.available ? 'ok' : 'no') + '">' + (p.available ? 'Disponible' : 'Rupture de stock') + '</span>' +
+        '</div>' +
+        '<div class="pharmacy-meta">' +
+          '<span>\ud83d\udccd ' + p.distance + '</span>' +
+        '</div>';
+      list.appendChild(card);
+    });
+
+    showView('view-med-results');
+  }
+
+  // ---------- Données simulées : conseils pharmaceutiques ----------
+  const FAQ_DB = [
+    { keywords: ["conserv"], answer: "Gardez vos médicaments dans un endroit sec et à l'abri de la lumière, idéalement entre 15 et 25°C, et hors de portée des enfants. Ne les laissez pas dans une voiture ou une pièce très chaude." },
+    { keywords: ["oubli"], answer: "En cas d'oubli d'une prise, ne doublez pas la dose suivante par précaution. Reprenez simplement votre traitement normalement, et demandez conseil à un pharmacien si l'oubli concerne un traitement au long cours." },
+    { keywords: ["périm", "perim", "jeter", "ordure"], answer: "Ne jetez pas un médicament périmé avec les ordures ménagères. Rapportez-le à une pharmacie partenaire, qui se chargera de son élimination en toute sécurité." },
+    { keywords: ["deux médicaments", "ensemble", "associer", "interaction"], answer: "Certaines associations de médicaments peuvent être déconseillées. Avant de les prendre ensemble, il est préférable de demander confirmation à un pharmacien, surtout en cas de traitement déjà en cours." }
+  ];
+
+  function findAnswer(question) {
+    const q = question.toLowerCase();
+    const hit = FAQ_DB.find(f => f.keywords.some(k => q.includes(k)));
+    if (hit) return hit.answer;
+    return "Merci pour votre question. Elle a bien été enregistrée. De façon générale, gardez toujours l'emballage et la notice de vos médicaments, et signalez toute réaction inhabituelle à un professionnel de santé.";
+  }
+
+  function askAdvice(question) {
+    showView('view-advice-chat');
+    const thread = document.getElementById('chat-thread');
+    thread.innerHTML = '';
+    addBubble(question, 'user');
+    showTypingThenAnswer(question);
+  }
+
+  function askAdviceFromInput() {
+    const input = document.getElementById('advice-input');
+    const question = input.value.trim();
+    if (!question) return;
+    input.value = '';
+    askAdvice(question);
+  }
+
+  function addBubble(text, who) {
+    const thread = document.getElementById('chat-thread');
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble ' + who;
+    if (who === 'pharma') {
+      bubble.innerHTML = '<span class="who">Conseil simulé</span>' + escapeHtml(text);
+    } else {
+      bubble.textContent = text;
+    }
+    thread.appendChild(bubble);
+  }
+
+  function showTypingThenAnswer(question) {
+    const thread = document.getElementById('chat-thread');
+    const typing = document.createElement('div');
+    typing.className = 'typing-dots';
+    typing.id = 'typing-indicator';
+    typing.innerHTML = '<span></span><span></span><span></span>';
+    thread.appendChild(typing);
+
+    setTimeout(() => {
+      const el = document.getElementById('typing-indicator');
+      if (el) el.remove();
+      addBubble(findAnswer(question), 'pharma');
+    }, 900);
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+</script>
+</body>
+</html>
