@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full bg-gray-100">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Mboa-Express - Livraison Douala & COD</title>
+  <meta name="description" content="Application mobile de livraison intra-ville sécurisée à Douala avec gestion du Cash on Delivery (COD) pour e-commerçantes." />
+  <meta property="og:title" content="Mboa-Express - Livraison Douala & COD" />
+  <meta property="og:description" content="Application mobile de livraison intra-ville sécurisée à Douala avec gestion du Cash on Delivery (COD) pour e-commerçantes." />
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            mboa: {
+              DEFAULT: '#FF6B00',
+              50: '#FFF5ED',
+              100: '#FFE9D6',
+              200: '#FFD3AD',
+              500: '#FF6B00',
+              600: '#E55F00',
+              700: '#C75100',
+              dark: '#1E293B',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Font Awesome CDN pour icônes -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <style>
+    html, body {
+      overscroll-behavior-y: none;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    input, select, textarea {
+      user-select: text;
+    }
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .hide-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    @keyframes pulse-subtle {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.85; transform: scale(1.03); }
+    }
+    .animate-pulse-subtle {
+      animation: pulse-subtle 2s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="h-full font-sans antialiased text-slate-800 bg-slate-900 flex justify-center items-center sm:p-4">
+
+  <!-- Conteneur simulateur smartphone Mobile-First (autonome, plein écran sur mobile réel) -->
+  <div class="w-full max-w-md h-full sm:h-[844px] bg-[#F9FAFB] sm:rounded-[36px] shadow-2xl flex flex-col overflow-hidden relative border-0 sm:border-8 sm:border-slate-800">
+    
+    <!-- Barre de statut mobile native -->
+    <div class="bg-white/95 backdrop-blur-md px-6 pt-3 pb-1 flex justify-between items-center text-xs font-semibold text-slate-600 z-30 select-none">
+      <span id="current-time">09:41</span>
+      <div class="flex items-center gap-1.5 text-[11px]">
+        <i class="fa-solid fa-signal"></i>
+        <span class="text-[10px] font-bold tracking-tight text-slate-700">4G+</span>
+        <i class="fa-solid fa-wifi text-[11px]"></i>
+        <i class="fa-solid fa-battery-full text-xs text-slate-800 ml-0.5"></i>
+      </div>
+    </div>
+
+    <!-- Header fixe supérieur -->
+    <header class="bg-white border-b border-slate-100 px-4 py-3 flex items-center justify-between sticky top-0 z-20 shadow-xs">
+      <!-- Logo Mboa-Express -->
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#FF6B00] to-orange-400 flex items-center justify-center text-white shadow-md shadow-orange-500/20">
+          <i class="fa-solid fa-motorcycle text-base"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-1">
+            <span class="font-extrabold text-lg tracking-tight text-slate-900">Mboa<span class="text-[#FF6B00]">-Express</span></span>
+            <span class="bg-orange-100 text-[#FF6B00] text-[10px] font-black px-1.5 py-0.5 rounded-full uppercase">Pro</span>
+          </div>
+          <p class="text-[10px] text-slate-400 font-medium">L'allié des vendeuses en ligne</p>
+        </div>
+      </div>
+
+      <!-- Sélecteur de ville figé sur Douala -->
+      <div class="flex items-center gap-1.5 bg-slate-50 border border-slate-200/80 px-2.5 py-1.5 rounded-full text-xs font-semibold text-slate-700 shadow-2xs">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <i class="fa-solid fa-location-dot text-[#FF6B00] text-xs"></i>
+        <span>Douala</span>
+        <i class="fa-solid fa-lock text-[10px] text-slate-400 ml-0.5" title="Actuellement disponible à Douala"></i>
+      </div>
+    </header>
+
+    <!-- Zone principale scrollable (écrans dynamiques) -->
+    <main class="flex-1 overflow-y-auto hide-scrollbar pb-24 px-4 pt-3.5 space-y-4" id="main-content">
+      
+      <!-- ================= SECTION 1: ZONE SOLDE & PORTEFEUILLE ================= -->
+      <section class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 text-white rounded-3xl p-5 shadow-lg relative overflow-hidden">
+        <div class="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-orange-500/15 blur-2xl pointer-events-none"></div>
+        <div class="absolute -left-6 -bottom-6 w-28 h-28 rounded-full bg-amber-500/10 blur-xl pointer-events-none"></div>
+
+        <div class="relative z-10 flex items-start justify-between">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-[11px] font-medium tracking-wide text-slate-300 uppercase">Portefeuille Vendeuse</span>
+              <span class="inline-flex items-center gap-1 text-[10px] bg-emerald-500/20 text-emerald-400 font-semibold px-2 py-0.5 rounded-full border border-emerald-500/30">
+                <i class="fa-solid fa-shield-halved text-[9px]"></i> COD Sécurisé
+              </span>
+            </div>
+            <!-- Solde Mobile Money -->
+            <div class="flex items-baseline gap-1.5">
+              <span id="wallet-balance" class="text-3xl font-black tracking-tight text-white">45 000</span>
+              <span class="text-sm font-bold text-orange-400">FCFA</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1 flex items-center gap-1.5">
+              <span>Recouvrements COD disponibles</span>
+              <span class="text-slate-600">•</span>
+              <span class="text-emerald-400 font-medium">MTN / Orange</span>
+            </p>
+          </div>
+
+          <!-- Bouton Retirer -->
+          <button onclick="openWithdrawModal()" class="group active:scale-95 transition-all bg-[#FF6B00] hover:bg-[#E55F00] text-white text-xs font-bold px-3.5 py-2.5 rounded-2xl flex items-center gap-1.5 shadow-md shadow-orange-500/30">
+            <i class="fa-solid fa-arrow-down-to-bracket text-xs group-hover:translate-y-0.5 transition-transform"></i>
+            <span>Retirer</span>
+          </button>
+        </div>
+
+        <!-- Badges rapides du portefeuille -->
+        <div class="mt-4 pt-3 border-t border-slate-700/60 grid grid-cols-2 gap-2 text-[11px]">
+          <div class="flex items-center gap-2 bg-slate-800/80 rounded-xl px-2.5 py-1.5">
+            <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+            <span class="text-slate-300">En cours de livraison:</span>
+            <strong class="text-white ml-auto" id="pending-cod-amount">24 500 F</strong>
+          </div>
+          <div class="flex items-center gap-2 bg-slate-800/80 rounded-xl px-2.5 py-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span class="text-slate-300">Total reversé ce mois:</span>
+            <strong class="text-white ml-auto">280 000 F</strong>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 2: ACTIONS PRINCIPALES ================= -->
+      <section class="grid grid-cols-2 gap-3">
+        <!-- Bouton 1 : Nouvelle livraison -->
+        <button id="btn-quick-new" onclick="showNewDeliveryForm()" class="active:scale-[0.98] transition-all bg-white hover:border-[#FF6B00] border-2 border-transparent rounded-2xl p-4 text-left shadow-sm flex flex-col justify-between h-32 relative overflow-hidden group">
+          <div class="absolute -right-4 -bottom-4 w-16 h-16 bg-orange-50 rounded-full group-hover:scale-125 transition-transform"></div>
+          <div class="flex items-center justify-between z-10 w-full">
+            <div class="w-11 h-11 rounded-2xl bg-orange-500/10 text-[#FF6B00] flex items-center justify-center text-xl font-bold group-hover:bg-[#FF6B00] group-hover:text-white transition-all shadow-xs">
+              <i class="fa-solid fa-motorcycle"></i>
+            </div>
+            <span class="text-[10px] font-bold text-[#FF6B00] bg-orange-100/70 px-2 py-0.5 rounded-full uppercase tracking-wider">Express</span>
+          </div>
+          <div class="z-10 mt-2">
+            <h3 class="font-extrabold text-sm text-slate-900 group-hover:text-[#FF6B00] transition-colors leading-tight">Nouvelle livraison</h3>
+            <p class="text-[11px] text-slate-500 font-medium">Bip un coursier moto</p>
+          </div>
+        </button>
+
+        <!-- Bouton 2 : Suivre un colis -->
+        <button id="btn-quick-track" onclick="showTrackingScreen()" class="active:scale-[0.98] transition-all bg-white hover:border-slate-800 border-2 border-transparent rounded-2xl p-4 text-left shadow-sm flex flex-col justify-between h-32 relative overflow-hidden group">
+          <div class="absolute -right-4 -bottom-4 w-16 h-16 bg-slate-100 rounded-full group-hover:scale-125 transition-transform"></div>
+          <div class="flex items-center justify-between z-10 w-full">
+            <div class="w-11 h-11 rounded-2xl bg-slate-100 text-slate-800 flex items-center justify-center text-xl font-bold group-hover:bg-slate-800 group-hover:text-white transition-all shadow-xs">
+              <i class="fa-solid fa-compass"></i>
+            </div>
+            <span class="flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full uppercase">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span> Live
+            </span>
+          </div>
+          <div class="z-10 mt-2">
+            <h3 class="font-extrabold text-sm text-slate-900 group-hover:text-slate-800 transition-colors leading-tight">Suivre un colis</h3>
+            <p class="text-[11px] text-slate-500 font-medium">Position & COD en direct</p>
+          </div>
+        </button>
+      </section>
+
+      <!-- ================= SECTION 3: VUES DYNAMIQUES (JS) ================= -->
+
+      <!-- --- VUE A: LISTE DES LIVRAISONS EN COURS (PAR DÉFAUT) --- -->
+      <section id="view-home" class="space-y-3">
+        <div class="flex items-center justify-between pt-1">
+          <div class="flex items-center gap-2">
+            <h2 class="font-extrabold text-base text-slate-900">Courses en cours</h2>
+            <span id="active-deliveries-count" class="bg-orange-100 text-[#FF6B00] text-xs font-bold px-2 py-0.5 rounded-full">2 actives</span>
+          </div>
+          <button onclick="refreshDeliveries()" class="text-xs text-slate-500 font-semibold hover:text-[#FF6B00] flex items-center gap-1">
+            <i class="fa-solid fa-arrows-rotate text-[10px]"></i> Actualiser
+          </button>
+        </div>
+
+        <!-- Liste dynamique des colis -->
+        <div id="deliveries-container" class="space-y-3">
+          
+          <!-- Carte Colis 1: Bonamoussadi (En route) -->
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 hover:border-orange-200 transition-all">
+            <div class="flex items-start justify-between mb-2.5">
+              <div class="flex items-center gap-2">
+                <span class="font-mono text-xs font-bold text-slate-500">#MB-8821</span>
+                <span class="text-xs bg-orange-50 text-[#FF6B00] font-bold px-2 py-0.5 rounded-md flex items-center gap-1">
+                  <i class="fa-solid fa-bolt text-[10px]"></i> En route
+                </span>
+              </div>
+              <div class="text-right">
+                <span class="text-[10px] uppercase font-bold text-slate-400 block">Montant COD</span>
+                <span class="text-sm font-black text-slate-900">18 500 F CFA</span>
+              </div>
+            </div>
+
+            <!-- Trajet Quartier Départ -> Arrivée -->
+            <div class="space-y-1.5 my-3 relative pl-4 border-l-2 border-dashed border-orange-200">
+              <div class="text-xs flex items-center justify-between">
+                <span class="text-slate-500">Départ:</span>
+                <span class="font-bold text-slate-800">Akwa (Ancien Dalip)</span>
+              </div>
+              <div class="text-xs flex items-center justify-between">
+                <span class="text-slate-500">Arrivée:</span>
+                <span class="font-extrabold text-[#FF6B00]">Bonamoussadi (Carrefour Denver)</span>
+              </div>
+            </div>
+
+            <div class="pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 text-[11px] font-bold">
+                  <i class="fa-solid fa-helmet-safety"></i>
+                </div>
+                <div>
+                  <p class="font-semibold text-slate-800">Livreur: Rodrigue (Moto #42)</p>
+                  <p class="text-[10px] text-slate-400">Arrivée estimée: 18 min</p>
+                </div>
+              </div>
+              <button onclick="trackSpecificOrder('#MB-8821')" class="bg-orange-50 hover:bg-orange-100 text-[#FF6B00] font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1">
+                <span>Détails</span>
+                <i class="fa-solid fa-chevron-right text-[10px]"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Carte Colis 2: Akwa (Livré) -->
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 hover:border-emerald-200 transition-all">
+            <div class="flex items-start justify-between mb-2.5">
+              <div class="flex items-center gap-2">
+                <span class="font-mono text-xs font-bold text-slate-500">#MB-8794</span>
+                <span class="text-xs bg-emerald-50 text-emerald-600 font-bold px-2 py-0.5 rounded-md flex items-center gap-1">
+                  <i class="fa-solid fa-circle-check text-[10px]"></i> Livré & Encaissé
+                </span>
+              </div>
+              <div class="text-right">
+                <span class="text-[10px] uppercase font-bold text-slate-400 block">COD Encaissé</span>
+                <span class="text-sm font-black text-emerald-600">6 000 F CFA</span>
+              </div>
+            </div>
+
+            <div class="space-y-1.5 my-3 relative pl-4 border-l-2 border-dashed border-emerald-200">
+              <div class="text-xs flex items-center justify-between">
+                <span class="text-slate-500">Départ:</span>
+                <span class="font-bold text-slate-800">Bali (Face Collège)</span>
+              </div>
+              <div class="text-xs flex items-center justify-between">
+                <span class="text-slate-500">Arrivée:</span>
+                <span class="font-extrabold text-slate-800">Akwa (Boulevard de la Liberté)</span>
+              </div>
+            </div>
+
+            <div class="pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-[11px] font-bold">
+                  <i class="fa-solid fa-money-bill-transfer"></i>
+                </div>
+                <p class="text-slate-600 font-medium">Fonds ajoutés au portefeuille</p>
+              </div>
+              <span class="text-[11px] font-bold text-slate-400">Il y a 35 min</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Astuce pour les vendeuses -->
+        <div class="bg-orange-50/70 border border-orange-200/60 rounded-2xl p-3.5 flex items-start gap-3">
+          <div class="w-8 h-8 rounded-xl bg-orange-100 text-[#FF6B00] flex-shrink-0 flex items-center justify-center">
+            <i class="fa-solid fa-lightbulb"></i>
+          </div>
+          <div>
+            <h4 class="text-xs font-bold text-slate-900">Conseil Mboa Sécurité</h4>
+            <p class="text-[11px] text-slate-600 mt-0.5">Le coursier vérifie le colis avec la cliente avant de récupérer l'argent en espèces ou via Orange/MTN MoMo.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- --- VUE B: FORMULAIRE NOUVELLE LIVRAISON (CACHÉ PAR DÉFAUT) --- -->
+      <section id="view-new-delivery" class="space-y-4 hidden">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <button onclick="showHomeScreen()" class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-700 flex items-center justify-center active:scale-90 transition-transform">
+              <i class="fa-solid fa-arrow-left text-xs"></i>
+            </button>
+            <h2 class="font-extrabold text-base text-slate-900">Commander une course</h2>
+          </div>
+          <span class="text-xs font-bold text-[#FF6B00] bg-orange-50 px-2.5 py-1 rounded-full">Douala Express</span>
+        </div>
+
+        <!-- Formulaire de réservation -->
+        <form id="delivery-form" onsubmit="handleDeliverySubmit(event)" class="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 space-y-4">
+          
+          <!-- Quartier départ & arrivée -->
+          <div class="space-y-3 bg-slate-50 p-3.5 rounded-2xl border border-slate-100">
+            <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-route text-[#FF6B00]"></i> Itinéraire intra-Douala
+            </h3>
+
+            <!-- Quartier départ -->
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">Quartier départ (Point de collecte)</label>
+              <div class="relative">
+                <select id="pickup-quarter" required class="w-full bg-white border border-slate-200 text-slate-800 text-xs rounded-xl px-3 py-2.5 font-semibold focus:outline-none focus:ring-2 focus:ring-[#FF6B00] focus:border-transparent appearance-none">
+                  <option value="Akwa">Akwa (Centre commercial / Boulevard)</option>
+                  <option value="Bonanjo">Bonanjo (Zone administrative)</option>
+                  <option value="Bonamoussadi">Bonamoussadi (Denver, Marché, Rond-point)</option>
+                  <option value="Makepe">Makepe (Missoke, Saint Tropez, BM)</option>
+                  <option value="Deido">Deido (Rond-point, Grand Moulin, Rue de la Joie)</option>
+                  <option value="Bali">Bali (Koumassi, Rue des Palmiers)</option>
+                  <option value="Kotto">Kotto (Bassong, Immeubles)</option>
+                  <option value="Logpom">Logpom (Bassong, Carrefour Andem)</option>
+                  <option value="Ndogpassi">Ndogpassi / Village (Zone Sud)</option>
+                  <option value="Bepanda">Bepanda (Omnisports, Casmando)</option>
+                  <option value="Yassa">Yassa / Nyalla</option>
+                  <option value="PK8-PK14">PK8 à PK14 (Zone Universitaire)</option>
+                </select>
+                <i class="fa-solid fa-chevron-down absolute right-3 top-3 text-[10px] text-slate-400 pointer-events-none"></i>
+              </div>
+            </div>
+
+            <!-- Quartier arrivée -->
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">Quartier arrivée (Chez la cliente)</label>
+              <div class="relative">
+                <select id="dropoff-quarter" required onchange="calculateDeliveryFee()" class="w-full bg-white border border-slate-200 text-slate-800 text-xs rounded-xl px-3 py-2.5 font-semibold focus:outline-none focus:ring-2 focus:ring-[#FF6B00] focus:border-transparent appearance-none">
+                  <option value="Bonamoussadi" selected>Bonamoussadi (Carrefour Denver)</option>
+                  <option value="Akwa">Akwa (Ancien Dalip / Salle des Fêtes)</option>
+                  <option value="Makepe">Makepe (Maison Blanche / Rhône-Poulenc)</option>
+                  <option value="Deido">Deido (Total 4 étages)</option>
+                  <option value="Bonanjo">Bonanjo (Hôtel de Ville)</option>
+                  <option value="Kotto">Kotto (Fin goudron)</option>
+                  <option value="Logpom">Logpom (Plateau)</option>
+                  <option value="Bali">Bali (Ancien aéroport)</option>
+                  <option value="Ndogpassi">Ndogpassi (Entrée marché)</option>
+                  <option value="Bepanda">Bepanda (Toner)</option>
+                  <option value="Yassa">Yassa (Stade Japoma)</option>
+                  <option value="PK8-PK14">PK10 / PK12 (Génie Militaire)</option>
+                </select>
+                <i class="fa-solid fa-chevron-down absolute right-3 top-3 text-[10px] text-slate-400 pointer-events-none"></i>
+              </div>
+            </div>
+
+            <!-- Repère précis -->
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">Précision / Repère camerounais</label>
+              <input type="text" id="destination-landmark" placeholder="Ex: Face boulangerie Zepol, barrière noire" class="w-full bg-white border border-slate-200 text-slate-800 text-xs rounded-xl px-3 py-2.5 font-medium focus:outline-none focus:ring-2 focus:ring-[#FF6B00]">
+            </div>
+          </div>
+
+          <!-- Coordonnées destinataire -->
+          <div class="space-y-3">
+            <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-user-tag text-[#FF6B00]"></i> Destinataire
+            </h3>
+
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">Nom de la cliente</label>
+              <input type="text" id="recipient-name" required placeholder="Ex: Mme Carole Ngo" class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-xl px-3 py-2.5 font-medium focus:outline-none focus:ring-2 focus:ring-[#FF6B00]">
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">Téléphone de la cliente (Orange / MTN)</label>
+              <div class="flex gap-2">
+                <span class="bg-slate-100 border border-slate-200 rounded-xl px-2.5 py-2 text-xs font-bold text-slate-600 flex items-center">+237</span>
+                <input type="tel" id="recipient-phone" required placeholder="69X XX XX XX" pattern="[0-9\s]{9,12}" class="flex-1 bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-xl px-3 py-2.5 font-medium focus:outline-none focus:ring-2 focus:ring-[#FF6B00]">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">Article(s) à livrer</label>
+              <input type="text" id="package-desc" required placeholder="Ex: Robe en soie + sandales taille 39" class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-xl px-3 py-2.5 font-medium focus:outline-none focus:ring-2 focus:ring-[#FF6B00]">
+            </div>
+          </div>
+
+          <!-- Option COD (Cash on Delivery) -->
+          <div class="bg-orange-50/70 border border-orange-200 p-3.5 rounded-2xl space-y-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                  <i class="fa-solid fa-hand-holding-dollar text-[#FF6B00]"></i> Paiement à la livraison (COD)
+                </h4>
+                <p class="text-[10px] text-slate-500 font-medium">Le coursier encaisse avant de remettre le paquet</p>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="cod-toggle" checked onchange="toggleCodField()" class="sr-only peer">
+                <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#FF6B00]"></div>
+              </label>
+            </div>
+
+            <!-- Champ prix article COD -->
+            <div id="cod-amount-wrapper">
+              <label class="block text-[11px] font-bold text-slate-700 mb-1">Montant à encaisser auprès de la cliente (FCFA)</label>
+              <div class="relative">
+                <input type="number" id="cod-price" required min="500" step="500" value="15000" placeholder="Ex: 15000" class="w-full bg-white border border-orange-300 text-slate-900 text-sm font-extrabold rounded-xl pl-3 pr-16 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#FF6B00]">
+                <span class="absolute right-3 top-2.5 text-xs font-black text-[#FF6B00]">FCFA</span>
+              </div>
+              <p class="text-[10px] text-slate-500 mt-1">Ce montant sera crédité sur votre solde Mboa dès que le colis est remis.</p>
+            </div>
+          </div>
+
+          <!-- Estimation de course -->
+          <div class="bg-slate-900 text-white rounded-2xl p-3.5 flex items-center justify-between">
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase font-semibold block">Frais de course estimés</span>
+              <span id="estimated-fee" class="text-base font-black text-orange-400">1 500 FCFA</span>
+            </div>
+            <div class="text-right">
+              <span class="text-[10px] text-slate-400 uppercase font-semibold block">Délai estimé</span>
+              <span class="text-xs font-bold text-white"><i class="fa-solid fa-clock text-orange-400 mr-1"></i>30 à 45 min</span>
+            </div>
+          </div>
+
+          <!-- Bouton validation -->
+          <button type="submit" class="w-full active:scale-[0.98] transition-all bg-[#FF6B00] hover:bg-[#E55F00] text-white font-extrabold text-sm py-3.5 rounded-2xl shadow-lg shadow-orange-500/30 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-paper-plane text-xs"></i>
+            <span>Envoyer la commande de course</span>
+          </button>
+        </form>
+      </section>
+
+      <!-- --- VUE C: SUIVRE UN COLIS (DIRECT / TRACKING) --- -->
+      <section id="view-tracking" class="space-y-4 hidden">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <button onclick="showHomeScreen()" class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-700 flex items-center justify-center active:scale-90 transition-transform">
+              <i class="fa-solid fa-arrow-left text-xs"></i>
+            </button>
+            <h2 class="font-extrabold text-base text-slate-900">Suivi en direct</h2>
+          </div>
+          <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> GPS Douala
+          </span>
+        </div>
+
+        <!-- Recherche par code -->
+        <div class="bg-white rounded-2xl p-3 shadow-sm border border-slate-100 flex gap-2">
+          <input type="text" id="tracking-input" value="#MB-8821" placeholder="Numéro #MB-XXXX" class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono font-bold uppercase focus:outline-none focus:ring-2 focus:ring-[#FF6B00]">
+          <button onclick="searchTrackingCode()" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-slate-800 transition-colors">
+            Vérifier
+          </button>
+        </div>
+
+        <!-- Carte de suivi interactif -->
+        <div class="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 space-y-4">
+          <!-- Entête colis -->
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+              <span class="text-[10px] text-slate-400 font-bold block uppercase">Course active</span>
+              <h3 class="font-black text-slate-900 text-sm" id="tracking-display-id">#MB-8821</h3>
+              <p class="text-[11px] text-slate-500 font-medium">Cliente: Carole Ngo • Bonamoussadi</p>
+            </div>
+            <div class="text-right">
+              <span class="text-[10px] text-slate-400 font-bold block uppercase">COD à collecter</span>
+              <span class="text-base font-black text-[#FF6B00]">18 500 F</span>
+            </div>
+          </div>
+
+          <!-- Simulation Carte Map Stylisée Douala -->
+          <div class="relative w-full h-36 bg-gradient-to-tr from-slate-100 via-orange-50/40 to-slate-200 rounded-2xl overflow-hidden border border-slate-200/80 p-3 flex flex-col justify-between">
+            <div class="absolute inset-0 opacity-15" style="background-image: radial-gradient(#FF6B00 1px, transparent 1px); background-size: 14px 14px;"></div>
+            
+            <div class="relative z-10 flex justify-between items-center text-[10px] font-bold">
+              <span class="bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded-md shadow-2xs text-slate-700">Départ: Akwa</span>
+              <span class="bg-[#FF6B00] text-white px-2 py-0.5 rounded-md shadow-2xs">Arrivée: Bonamoussadi</span>
+            </div>
+
+            <!-- Moto au milieu -->
+            <div class="relative z-10 flex flex-col items-center justify-center my-auto">
+              <div class="w-10 h-10 rounded-full bg-[#FF6B00] text-white flex items-center justify-center text-sm shadow-lg shadow-orange-500/40 animate-pulse-subtle">
+                <i class="fa-solid fa-motorcycle"></i>
+              </div>
+              <span class="bg-slate-900/90 text-white text-[9px] font-bold px-2 py-0.5 rounded-full mt-1">Rond-Point Deido</span>
+            </div>
+
+            <div class="relative z-10 flex justify-between items-center text-[10px] text-slate-600 font-semibold">
+              <span class="flex items-center gap-1"><i class="fa-solid fa-road text-[#FF6B00]"></i> Trafic fluide</span>
+              <span class="text-[#FF6B00] font-black">Livreur à ~3 km</span>
+            </div>
+          </div>
+
+          <!-- Timeline des étapes de livraison -->
+          <div class="space-y-3 pt-1">
+            <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Statut de la course</h4>
+
+            <div class="space-y-3 relative pl-6 before:content-[''] before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-orange-200">
+              
+              <!-- Etape 1: Confirmée -->
+              <div class="relative">
+                <span class="absolute -left-6 top-0.5 w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] flex items-center justify-center">
+                  <i class="fa-solid fa-check"></i>
+                </span>
+                <div>
+                  <p class="text-xs font-bold text-slate-800">Commande validée</p>
+                  <p class="text-[10px] text-slate-400">09:15 • Colis enregistré par la boutique</p>
+                </div>
+              </div>
+
+              <!-- Etape 2: Colis ramassé -->
+              <div class="relative">
+                <span class="absolute -left-6 top-0.5 w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] flex items-center justify-center">
+                  <i class="fa-solid fa-check"></i>
+                </span>
+                <div>
+                  <p class="text-xs font-bold text-slate-800">Colis ramassé à Akwa</p>
+                  <p class="text-[10px] text-slate-400">09:28 • Par le coursier Rodrigue</p>
+                </div>
+              </div>
+
+              <!-- Etape 3: En route (active) -->
+              <div class="relative">
+                <span class="absolute -left-6 top-0.5 w-5 h-5 rounded-full bg-[#FF6B00] text-white text-[10px] flex items-center justify-center animate-pulse">
+                  <i class="fa-solid fa-motorcycle"></i>
+                </span>
+                <div>
+                  <p class="text-xs font-extrabold text-[#FF6B00]">En transit vers Bonamoussadi</p>
+                  <p class="text-[10px] text-slate-500 font-medium">09:39 • En approche du Carrefour Denver</p>
+                </div>
+              </div>
+
+              <!-- Etape 4: Remise et Encaissement COD -->
+              <div class="relative opacity-50">
+                <span class="absolute -left-6 top-0.5 w-5 h-5 rounded-full bg-slate-200 text-slate-500 text-[10px] flex items-center justify-center">
+                  <i class="fa-solid fa-hand-holding-dollar"></i>
+                </span>
+                <div>
+                  <p class="text-xs font-bold text-slate-700">Encaissement COD (18 500 F)</p>
+                  <p class="text-[10px] text-slate-400">En attente de remise à la cliente</p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Contact direct livreur -->
+          <div class="bg-slate-50 rounded-2xl p-3 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <div class="w-9 h-9 rounded-full bg-orange-100 text-[#FF6B00] font-bold flex items-center justify-center text-sm">
+                R
+              </div>
+              <div>
+                <p class="text-xs font-bold text-slate-900">Rodrigue (Moto #42)</p>
+                <p class="text-[10px] text-slate-500">694 ••• 210</p>
+              </div>
+            </div>
+            <button onclick="triggerCallAlert()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5 shadow-sm">
+              <i class="fa-solid fa-phone text-xs"></i>
+              <span>Appeler</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- --- VUE D: HISTORIQUE DES LIVRAISONS (BOTTOM NAV 2) --- -->
+      <section id="view-history" class="space-y-3 hidden">
+        <div class="flex items-center justify-between">
+          <h2 class="font-extrabold text-base text-slate-900">Historique des courses</h2>
+          <span class="text-xs font-bold text-slate-500">Ce mois : 14 courses</span>
+        </div>
+
+        <!-- Filtres rapides -->
+        <div class="flex gap-2 text-xs font-semibold overflow-x-auto hide-scrollbar pb-1">
+          <button class="bg-[#FF6B00] text-white px-3 py-1.5 rounded-full whitespace-nowrap">Toutes (14)</button>
+          <button class="bg-white border border-slate-200 text-slate-600 px-3 py-1.5 rounded-full whitespace-nowrap">Livrés COD (12)</button>
+          <button class="bg-white border border-slate-200 text-slate-600 px-3 py-1.5 rounded-full whitespace-nowrap">Annulés (2)</button>
+        </div>
+
+        <div class="space-y-2.5">
+          <!-- Item Historique 1 -->
+          <div class="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-2xs flex items-center justify-between">
+            <div>
+              <div class="flex items-center gap-1.5 mb-1">
+                <span class="text-xs font-black text-slate-800">#MB-8794</span>
+                <span class="text-[9px] bg-emerald-50 text-emerald-600 font-bold px-1.5 py-0.5 rounded">Livré</span>
+              </div>
+              <p class="text-xs text-slate-600 font-medium">Bali ➔ Akwa • Mme Sophie</p>
+              <p class="text-[10px] text-slate-400">Hier à 16:20</p>
+            </div>
+            <div class="text-right">
+              <span class="text-xs font-black text-emerald-600">+6 000 F</span>
+              <span class="text-[10px] text-slate-400 block font-semibold">COD versé</span>
+            </div>
+          </div>
+
+          <!-- Item Historique 2 -->
+          <div class="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-2xs flex items-center justify-between">
+            <div>
+              <div class="flex items-center gap-1.5 mb-1">
+                <span class="text-xs font-black text-slate-800">#MB-8630</span>
+                <span class="text-[9px] bg-emerald-50 text-emerald-600 font-bold px-1.5 py-0.5 rounded">Livré</span>
+              </div>
+              <p class="text-xs text-slate-600 font-medium">Makepe ➔ Kotto • Dr. Sandra</p>
+              <p class="text-[10px] text-slate-400">24 Septembre à 14:05</p>
+            </div>
+            <div class="text-right">
+              <span class="text-xs font-black text-emerald-600">+25 000 F</span>
+              <span class="text-[10px] text-slate-400 block font-semibold">COD versé</span>
+            </div>
+          </div>
+
+          <!-- Item Historique 3 -->
+          <div class="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-2xs flex items-center justify-between">
+            <div>
+              <div class="flex items-center gap-1.5 mb-1">
+                <span class="text-xs font-black text-slate-800">#MB-8512</span>
+                <span class="text-[9px] bg-rose-50 text-rose-600 font-bold px-1.5 py-0.5 rounded">Cliente absente</span>
+              </div>
+              <p class="text-xs text-slate-600 font-medium">Deido ➔ Logpom • Colis retourné</p>
+              <p class="text-[10px] text-slate-400">22 Septembre à 11:30</p>
+            </div>
+            <div class="text-right">
+              <span class="text-xs font-black text-slate-500">0 F</span>
+              <span class="text-[10px] text-slate-400 block font-semibold">Retour boutique</span>
+            </div>
+          </div>
+
+          <!-- Item Historique 4 -->
+          <div class="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-2xs flex items-center justify-between">
+            <div>
+              <div class="flex items-center gap-1.5 mb-1">
+                <span class="text-xs font-black text-slate-800">#MB-8409</span>
+                <span class="text-[9px] bg-emerald-50 text-emerald-600 font-bold px-1.5 py-0.5 rounded">Livré</span>
+              </div>
+              <p class="text-xs text-slate-600 font-medium">Bonanjo ➔ Yassa • M. Ekani</p>
+              <p class="text-[10px] text-slate-400">20 Septembre à 18:45</p>
+            </div>
+            <div class="text-right">
+              <span class="text-xs font-black text-emerald-600">+32 000 F</span>
+              <span class="text-[10px] text-slate-400 block font-semibold">COD versé</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- --- VUE E: PROFIL DE LA VENDEUSE (BOTTOM NAV 3) --- -->
+      <section id="view-profile" class="space-y-4 hidden">
+        <div class="flex items-center justify-between">
+          <h2 class="font-extrabold text-base text-slate-900">Mon Compte Vendeuse</h2>
+          <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full flex items-center gap-1">
+            <i class="fa-solid fa-badge-check"></i> Compte Certifié
+          </span>
+        </div>
+
+        <!-- Carte d'identité commerçante -->
+        <div class="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 flex items-center gap-3.5">
+          <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#FF6B00] to-amber-400 text-white text-xl font-black flex items-center justify-center shadow-md">
+            BG
+          </div>
+          <div class="flex-1">
+            <h3 class="font-extrabold text-slate-900 text-sm">Boutique Glamour Douala</h3>
+            <p class="text-[11px] text-slate-500 font-medium">Prêt-à-porter & Cosmétiques</p>
+            <div class="flex items-center gap-2 mt-1">
+              <span class="text-amber-500 text-xs flex items-center gap-1 font-bold">
+                <i class="fa-solid fa-star"></i> 4.9/5
+              </span>
+              <span class="text-slate-300">•</span>
+              <span class="text-[11px] text-slate-500 font-semibold">142 livraisons réussies</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Paramètres Mobile Money pour reversement auto -->
+        <div class="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 space-y-3">
+          <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="fa-solid fa-wallet text-[#FF6B00]"></i> Réception des reversements COD
+          </h3>
+
+          <div class="bg-slate-50 rounded-2xl p-3 border border-slate-200/80 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-xl bg-amber-400 text-slate-900 font-black text-xs flex items-center justify-center">
+                MTN
+              </div>
+              <div>
+                <p class="text-xs font-bold text-slate-900">MTN MoMo Principal</p>
+                <p class="text-[11px] text-slate-500 font-mono">677 ••• 892</p>
+              </div>
+            </div>
+            <span class="text-xs font-bold text-[#FF6B00]">Par défaut</span>
+          </div>
+
+          <div class="bg-slate-50 rounded-2xl p-3 border border-slate-200/80 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-xl bg-orange-600 text-white font-black text-xs flex items-center justify-center">
+                OM
+              </div>
+              <div>
+                <p class="text-xs font-bold text-slate-900">Orange Money Secondaire</p>
+                <p class="text-[11px] text-slate-500 font-mono">699 ••• 145</p>
+              </div>
+            </div>
+            <button class="text-xs text-slate-500 hover:text-slate-800 font-semibold">Changer</button>
+          </div>
+        </div>
+
+        <!-- Statistiques rapides -->
+        <div class="grid grid-cols-2 gap-3 text-center">
+          <div class="bg-white rounded-2xl p-3 shadow-sm border border-slate-100">
+            <span class="text-[10px] text-slate-400 uppercase font-bold block">Taux de succès COD</span>
+            <span class="text-lg font-black text-emerald-600">97.8%</span>
+          </div>
+          <div class="bg-white rounded-2xl p-3 shadow-sm border border-slate-100">
+            <span class="text-[10px] text-slate-400 uppercase font-bold block">Temps moyen course</span>
+            <span class="text-lg font-black text-slate-800">34 min</span>
+          </div>
+        </div>
+
+        <!-- Support assistance WhatsApp / Appel -->
+        <div class="bg-slate-900 text-white rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <h4 class="text-xs font-extrabold text-white">Besoin d'aide ?</h4>
+            <p class="text-[10px] text-slate-400">Assistance 7j/7 pour les commerçantes</p>
+          </div>
+          <button onclick="triggerSupportAlert()" class="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5">
+            <i class="fa-brands fa-whatsapp text-sm"></i>
+            <span>WhatsApp Support</span>
+          </button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ================= MODALE: RETRAIT PORTEFEUILLE ================= -->
+    <div id="modal-withdraw" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center hidden p-0 sm:p-4">
+      <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 space-y-4 shadow-2xl border border-slate-100">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-full bg-orange-100 text-[#FF6B00] flex items-center justify-center">
+              <i class="fa-solid fa-arrow-down-to-bracket text-xs"></i>
+            </div>
+            <h3 class="font-extrabold text-slate-900 text-base">Retrait Mobile Money</h3>
+          </div>
+          <button onclick="closeWithdrawModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-slate-200">
+            <i class="fa-solid fa-xmark text-sm"></i>
+          </button>
+        </div>
+
+        <p class="text-xs text-slate-500">Transférez instantanément vos gains COD vers votre compte personnel sans frais cachés.</p>
+
+        <!-- Choix opérateur -->
+        <div class="grid grid-cols-2 gap-3">
+          <label class="border-2 border-[#FF6B00] bg-orange-50/50 rounded-2xl p-3 flex items-center gap-2.5 cursor-pointer">
+            <input type="radio" name="withdraw-provider" value="mtn" checked class="text-[#FF6B00] focus:ring-0">
+            <div>
+              <p class="text-xs font-bold text-slate-900">MTN MoMo</p>
+              <p class="text-[10px] text-slate-500 font-mono">677 ••• 892</p>
+            </div>
+          </label>
+          <label class="border-2 border-slate-200 hover:border-orange-300 rounded-2xl p-3 flex items-center gap-2.5 cursor-pointer">
+            <input type="radio" name="withdraw-provider" value="orange" class="text-[#FF6B00] focus:ring-0">
+            <div>
+              <p class="text-xs font-bold text-slate-900">Orange Money</p>
+              <p class="text-[10px] text-slate-500 font-mono">699 ••• 145</p>
+            </div>
+          </label>
+        </div>
+
+        <!-- Montant à retirer -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Montant à retirer (Max: 45 000 FCFA)</label>
+          <div class="relative">
+            <input type="number" id="withdraw-amount-input" value="45000" min="1000" max="45000" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-base font-extrabold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#FF6B00]">
+            <span class="absolute right-3 top-3 text-xs font-bold text-slate-500">FCFA</span>
+          </div>
+        </div>
+
+        <div class="flex gap-2">
+          <button onclick="setWithdrawAmount(10000)" class="flex-1 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold">10 000</button>
+          <button onclick="setWithdrawAmount(20000)" class="flex-1 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold">20 000</button>
+          <button onclick="setWithdrawAmount(45000)" class="flex-1 py-1 bg-orange-100 hover:bg-orange-200 text-[#FF6B00] rounded-lg text-xs font-bold">Tout (Max)</button>
+        </div>
+
+        <button onclick="executeWithdraw()" class="w-full bg-[#FF6B00] hover:bg-[#E55F00] text-white font-extrabold text-xs py-3.5 rounded-2xl shadow-lg shadow-orange-500/30 flex items-center justify-center gap-2 active:scale-95 transition-all">
+          <i class="fa-solid fa-check text-xs"></i>
+          <span>Confirmer le virement immédiat</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ================= NOTIFICATION TOAST FLOTTANTE ================= -->
+    <div id="toast-notification" class="fixed top-12 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2.5 text-xs font-bold transition-all duration-300 transform -translate-y-12 opacity-0 pointer-events-none max-w-[90%]">
+      <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-sm"></i>
+      <span id="toast-message">Action réussie !</span>
+    </div>
+
+    <!-- ================= BARRE DE NAVIGATION BASSE (BOTTOM NAV FIXE) ================= -->
+    <nav class="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200/80 px-6 py-2.5 flex justify-around items-center z-30 shadow-lg">
+      
+      <!-- Onglet 1: Accueil -->
+      <button id="nav-btn-home" onclick="showHomeScreen()" class="flex-1 flex flex-col items-center gap-1 text-[#FF6B00] font-bold transition-all py-1 active:scale-95">
+        <i class="fa-solid fa-house text-lg"></i>
+        <span class="text-[10px] tracking-tight">Accueil</span>
+        <span class="w-1.5 h-1.5 rounded-full bg-[#FF6B00]"></span>
+      </button>
+
+      <!-- Onglet 2: Historique -->
+      <button id="nav-btn-history" onclick="showHistoryScreen()" class="flex-1 flex flex-col items-center gap-1 text-slate-400 font-semibold hover:text-slate-600 transition-all py-1 active:scale-95">
+        <i class="fa-solid fa-clock-rotate-left text-lg"></i>
+        <span class="text-[10px] tracking-tight">Historique</span>
+        <span class="w-1.5 h-1.5 rounded-full bg-transparent"></span>
+      </button>
+
+      <!-- Onglet 3: Profil -->
+      <button id="nav-btn-profile" onclick="showProfileScreen()" class="flex-1 flex flex-col items-center gap-1 text-slate-400 font-semibold hover:text-slate-600 transition-all py-1 active:scale-95">
+        <i class="fa-solid fa-store text-lg"></i>
+        <span class="text-[10px] tracking-tight">Ma Boutique</span>
+        <span class="w-1.5 h-1.5 rounded-full bg-transparent"></span>
+      </button>
+
+    </nav>
+
+  </div>
+
+  <!-- Logique JavaScript autonome -->
+  <script>
+    // État de l'application
+    let currentWalletBalance = 45000;
+    let pendingCodTotal = 24500;
+    let activeDeliveries = [
+      {
+        id: '#MB-8821',
+        senderQuarter: 'Akwa (Ancien Dalip)',
+        receiverQuarter: 'Bonamoussadi (Carrefour Denver)',
+        recipient: 'Carole Ngo',
+        status: 'En route',
+        codPrice: 18500,
+        rider: 'Rodrigue (Moto #42)',
+        eta: '18 min'
+      },
+      {
+        id: '#MB-8794',
+        senderQuarter: 'Bali (Face Collège)',
+        receiverQuarter: 'Akwa (Boulevard de la Liberté)',
+        recipient: 'Sophie M.',
+        status: 'Livré & Encaissé',
+        codPrice: 6000,
+        rider: 'Kouam (Moto #12)',
+        eta: 'Terminé'
+      }
+    ];
+
+    // Horloge temps réel
+    function updateClock() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const timeElem = document.getElementById('current-time');
+      if (timeElem) timeElem.textContent = `${hours}:${minutes}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Gestion du basculement d'écrans
+    function hideAllViews() {
+      document.getElementById('view-home').classList.add('hidden');
+      document.getElementById('view-new-delivery').classList.add('hidden');
+      document.getElementById('view-tracking').classList.add('hidden');
+      document.getElementById('view-history').classList.add('hidden');
+      document.getElementById('view-profile').classList.add('hidden');
+    }
+
+    function setBottomNavActive(activeTab) {
+      const tabs = ['home', 'history', 'profile'];
+      tabs.forEach(tab => {
+        const btn = document.getElementById(`nav-btn-${tab}`);
+        if (!btn) return;
+        const dot = btn.querySelector('span:last-child');
+        if (tab === activeTab) {
+          btn.className = 'flex-1 flex flex-col items-center gap-1 text-[#FF6B00] font-bold transition-all py-1 active:scale-95';
+          if (dot) dot.className = 'w-1.5 h-1.5 rounded-full bg-[#FF6B00]';
+        } else {
+          btn.className = 'flex-1 flex flex-col items-center gap-1 text-slate-400 font-semibold hover:text-slate-600 transition-all py-1 active:scale-95';
+          if (dot) dot.className = 'w-1.5 h-1.5 rounded-full bg-transparent';
+        }
+      });
+    }
+
+    function showHomeScreen() {
+      hideAllViews();
+      document.getElementById('view-home').classList.remove('hidden');
+      setBottomNavActive('home');
+      scrollToTop();
+    }
+
+    function showNewDeliveryForm() {
+      hideAllViews();
+      document.getElementById('view-new-delivery').classList.remove('hidden');
+      setBottomNavActive('home');
+      calculateDeliveryFee();
+      scrollToTop();
+    }
+
+    function showTrackingScreen() {
+      hideAllViews();
+      document.getElementById('view-tracking').classList.remove('hidden');
+      setBottomNavActive('home');
+      scrollToTop();
+    }
+
+    function showHistoryScreen() {
+      hideAllViews();
+      document.getElementById('view-history').classList.remove('hidden');
+      setBottomNavActive('history');
+      scrollToTop();
+    }
+
+    function showProfileScreen() {
+      hideAllViews();
+      document.getElementById('view-profile').classList.remove('hidden');
+      setBottomNavActive('profile');
+      scrollToTop();
+    }
+
+    function scrollToTop() {
+      const main = document.getElementById('main-content');
+      if (main) main.scrollTop = 0;
+    }
+
+    // Calcul dynamique des frais de course en fonction des quartiers de Douala
+    function calculateDeliveryFee() {
+      const dropoff = document.getElementById('dropoff-quarter').value;
+      const feeElem = document.getElementById('estimated-fee');
+      if (!feeElem) return;
+
+      let fee = 1500;
+      if (['Bonamoussadi', 'Makepe', 'Kotto'].includes(dropoff)) {
+        fee = 1500;
+      } else if (['Yassa', 'Ndogpassi', 'PK8-PK14'].includes(dropoff)) {
+        fee = 2500;
+      } else if (['Akwa', 'Deido', 'Bali', 'Bonanjo'].includes(dropoff)) {
+        fee = 1200;
+      } else {
+        fee = 1800;
+      }
+      feeElem.textContent = `${fee.toLocaleString()} FCFA`;
+    }
+
+    // Activer/Désactiver champ COD
+    function toggleCodField() {
+      const toggle = document.getElementById('cod-toggle');
+      const wrapper = document.getElementById('cod-amount-wrapper');
+      const input = document.getElementById('cod-price');
+      if (toggle.checked) {
+        wrapper.classList.remove('opacity-40', 'pointer-events-none');
+        input.required = true;
+      } else {
+        wrapper.classList.add('opacity-40', 'pointer-events-none');
+        input.required = false;
+        input.value = '0';
+      }
+    }
+
+    // Soumission d'une nouvelle course
+    function handleDeliverySubmit(e) {
+      e.preventDefault();
+      const pickup = document.getElementById('pickup-quarter').value;
+      const dropoff = document.getElementById('dropoff-quarter').value;
+      const recipient = document.getElementById('recipient-name').value;
+      const isCod = document.getElementById('cod-toggle').checked;
+      const codPrice = isCod ? parseInt(document.getElementById('cod-price').value || 0, 10) : 0;
+
+      const newId = `#MB-${Math.floor(1000 + Math.random() * 9000)}`;
+
+      const newOrder = {
+        id: newId,
+        senderQuarter: pickup,
+        receiverQuarter: dropoff,
+        recipient: recipient,
+        status: 'En route',
+        codPrice: codPrice,
+        rider: 'Armel Moto (#09)',
+        eta: '25 min'
+      };
+
+      activeDeliveries.unshift(newOrder);
+      pendingCodTotal += codPrice;
+
+      renderDeliveries();
+      document.getElementById('pending-cod-amount').textContent = `${pendingCodTotal.toLocaleString()} F`;
+      
+      e.target.reset();
+      showToast(`Course ${newId} réservée ! Coursier en route.`, 'fa-circle-check', 'text-emerald-400');
+      showHomeScreen();
+    }
+
+    function renderDeliveries() {
+      const container = document.getElementById('deliveries-container');
+      const countElem = document.getElementById('active-deliveries-count');
+      if (!container) return;
+
+      countElem.textContent = `${activeDeliveries.length} actives`;
+
+      container.innerHTML = activeDeliveries.map(item => `
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 hover:border-orange-200 transition-all">
+          <div class="flex items-start justify-between mb-2.5">
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-xs font-bold text-slate-500">${item.id}</span>
+              <span class="text-xs ${item.status.includes('Livré') ? 'bg-emerald-50 text-emerald-600' : 'bg-orange-50 text-[#FF6B00]'} font-bold px-2 py-0.5 rounded-md flex items-center gap-1">
+                <i class="fa-solid ${item.status.includes('Livré') ? 'fa-circle-check' : 'fa-bolt'} text-[10px]"></i> ${item.status}
+              </span>
+            </div>
+            <div class="text-right">
+              <span class="text-[10px] uppercase font-bold text-slate-400 block">${item.status.includes('Livré') ? 'COD Encaissé' : 'Montant COD'}</span>
+              <span class="text-sm font-black ${item.status.includes('Livré') ? 'text-emerald-600' : 'text-slate-900'}">${item.codPrice.toLocaleString()} F CFA</span>
+            </div>
+          </div>
+
+          <div class="space-y-1.5 my-3 relative pl-4 border-l-2 border-dashed ${item.status.includes('Livré') ? 'border-emerald-200' : 'border-orange-200'}">
+            <div class="text-xs flex items-center justify-between">
+              <span class="text-slate-500">Départ:</span>
+              <span class="font-bold text-slate-800">${item.senderQuarter}</span>
+            </div>
+            <div class="text-xs flex items-center justify-between">
+              <span class="text-slate-500">Arrivée:</span>
+              <span class="font-extrabold text-[#FF6B00]">${item.receiverQuarter}</span>
+            </div>
+          </div>
+
+          <div class="pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2">
+              <div class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 text-[11px] font-bold">
+                <i class="fa-solid fa-helmet-safety"></i>
+              </div>
+              <div>
+                <p class="font-semibold text-slate-800">Livreur: ${item.rider}</p>
+                <p class="text-[10px] text-slate-400">Arrivée estimée: ${item.eta}</p>
+              </div>
+            </div>
+            <button onclick="trackSpecificOrder('${item.id}')" class="bg-orange-50 hover:bg-orange-100 text-[#FF6B00] font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1">
+              <span>Détails</span>
+              <i class="fa-solid fa-chevron-right text-[10px]"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function trackSpecificOrder(orderId) {
+      document.getElementById('tracking-input').value = orderId;
+      document.getElementById('tracking-display-id').textContent = orderId;
+      showTrackingScreen();
+    }
+
+    function searchTrackingCode() {
+      const code = document.getElementById('tracking-input').value.trim();
+      if (!code) {
+        showToast('Veuillez entrer un code de suivi', 'fa-triangle-exclamation', 'text-amber-400');
+        return;
+      }
+      document.getElementById('tracking-display-id').textContent = code;
+      showToast(`Recherche pour ${code} actualisée`, 'fa-circle-check', 'text-emerald-400');
+    }
+
+    function refreshDeliveries() {
+      showToast('Actualisation des courses à Douala...', 'fa-arrows-rotate', 'text-orange-400');
+      renderDeliveries();
+    }
+
+    // Gestion du retrait portefeuille
+    function openWithdrawModal() {
+      document.getElementById('modal-withdraw').classList.remove('hidden');
+    }
+
+    function closeWithdrawModal() {
+      document.getElementById('modal-withdraw').classList.add('hidden');
+    }
+
+    function setWithdrawAmount(amount) {
+      document.getElementById('withdraw-amount-input').value = amount;
+    }
+
+    function executeWithdraw() {
+      const amountInput = document.getElementById('withdraw-amount-input');
+      const amount = parseInt(amountInput.value, 10);
+      if (isNaN(amount) || amount <= 0) {
+        showToast('Montant invalide', 'fa-circle-xmark', 'text-rose-400');
+        return;
+      }
+      if (amount > currentWalletBalance) {
+        showToast('Solde disponible insuffisant', 'fa-circle-xmark', 'text-rose-400');
+        return;
+      }
+
+      currentWalletBalance -= amount;
+      document.getElementById('wallet-balance').textContent = currentWalletBalance.toLocaleString();
+      closeWithdrawModal();
+      showToast(`Virement MoMo de ${amount.toLocaleString()} FCFA envoyé avec succès !`, 'fa-circle-check', 'text-emerald-400');
+    }
+
+    // Notifications Toast flottantes
+    let toastTimeout;
+    function showToast(message, iconClass = 'fa-circle-check', iconColor = 'text-emerald-400') {
+      const toast = document.getElementById('toast-notification');
+      const msg = document.getElementById('toast-message');
+      const icon = document.getElementById('toast-icon');
+
+      if (!toast) return;
+
+      clearTimeout(toastTimeout);
+      msg.textContent = message;
+      icon.className = `fa-solid ${iconClass} ${iconColor} text-sm`;
+
+      toast.classList.remove('-translate-y-12', 'opacity-0', 'pointer-events-none');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      toastTimeout = setTimeout(() => {
+        toast.classList.add('-translate-y-12', 'opacity-0', 'pointer-events-none');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 3500);
+    }
+
+    function triggerCallAlert() {
+      showToast('Appel direct du coursier Rodrigue en cours...', 'fa-phone', 'text-emerald-400');
+    }
+
+    function triggerSupportAlert() {
+      showToast('Ouverture de WhatsApp Support Mboa...', 'fa-brands fa-whatsapp', 'text-emerald-400');
+    }
+  </script>
+
+</body>
+</html>

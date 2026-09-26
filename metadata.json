@@ -1,0 +1,6 @@
+{
+  "name": "Mboa-Express - Livraison Douala & COD",
+  "description": "Prototype mobile-first de livraison intra-ville sécurisée à Douala avec gestion Cash on Delivery pour vendeuses en ligne.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
